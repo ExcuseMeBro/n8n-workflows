@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  n8n-workflows:
+    build: .
+    container_name: n8n-workflows-app
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount workflows directory to persist workflow files
+      - ./workflows:/app/workflows:ro
+      # Mount database directory to persist SQLite database
+      - ./database:/app/database
+      # Optional: Mount static files for development
+      - ./static:/app/static:ro
+    environment:
+      - WORKFLOW_DB_PATH=/app/database/workflows.db
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Optional: Add a volume for persistent database storage
+volumes:
+  database_data:
+    driver: local
